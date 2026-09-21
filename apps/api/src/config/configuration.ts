@@ -4,6 +4,7 @@ const environmentSchema = z.object({
   NODE_ENV: z
     .enum(['development', 'test', 'production'])
     .default('development'),
+  PORT: z.coerce.number().int().positive().optional(),
   API_PORT: z.coerce.number().int().positive().default(4000),
   WEB_URL: z.url().default('http://localhost:3000'),
   ADMIN_URL: z.url().default('http://localhost:5173'),

@@ -17,7 +17,10 @@ async function bootstrap() {
   })
   app.enableShutdownHooks()
 
-  await app.listen(config.getOrThrow<number>('API_PORT'))
+  const port =
+    config.get<number>('PORT') ?? config.getOrThrow<number>('API_PORT')
+
+  await app.listen(port, '0.0.0.0')
 }
 
 void bootstrap()

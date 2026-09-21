@@ -8,8 +8,8 @@
 
 body {
   margin: 0;
-  background: hsl(var(--happi-background));
-  color: hsl(var(--happi-foreground));
+  background: var(--happi-background);
+  color: var(--happi-foreground);
   font-family: var(--happi-font-body);
 }
 

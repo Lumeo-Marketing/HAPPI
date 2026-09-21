@@ -3,9 +3,9 @@
 .happi-card {
   width: min(42rem, 100%);
   padding: clamp(1.5rem, 5vw, 4rem);
-  border: 1px solid hsl(var(--happi-border));
+  border: 1px solid var(--happi-border);
   border-radius: var(--happi-radius-lg);
-  background: hsl(var(--happi-surface));
+  background: var(--happi-surface);
   box-shadow: var(--happi-shadow-md);
 }
 
@@ -20,12 +20,12 @@
 }
 
 .happi-card p:not(.happi-eyebrow) {
-  color: hsl(var(--happi-muted-foreground));
+  color: var(--happi-muted-foreground);
   line-height: 1.6;
 }
 
 .happi-eyebrow {
-  color: hsl(var(--happi-primary));
+  color: var(--happi-primary);
   font-size: 0.75rem;
   font-weight: 700;
   letter-spacing: 0.12em;
@@ -47,16 +47,16 @@
 }
 
 .happi-button--primary {
-  background: hsl(var(--happi-primary));
-  color: hsl(var(--happi-primary-foreground));
+  background: var(--happi-primary);
+  color: var(--happi-primary-foreground);
 }
 
 .happi-button--secondary {
-  background: hsl(var(--happi-secondary));
-  color: hsl(var(--happi-secondary-foreground));
+  background: var(--happi-secondary);
+  color: var(--happi-secondary-foreground);
 }
 
 .happi-button--ghost {
   background: transparent;
-  color: hsl(var(--happi-foreground));
+  color: var(--happi-foreground);
 }

@@ -28,6 +28,7 @@ HAPPI follows the proven local pattern in `oss-server`:
 - TypeORM migrations are the only production schema-change mechanism; `synchronize` stays disabled.
 - Redis 7 is available for ephemeral data and background-job infrastructure. It must not become the source of truth for bookings, payments, earnings, or session completion.
 - Local infrastructure is isolated in `docker-compose.dev.yml` with HAPPI-specific databases and volumes.
+- The shared development environment uses Railway private networking and service reference variables; credentials never belong in the repository.
 
 Initial aggregate/module boundaries mirror the PRD: auth, clients, therapists, verification, availability, bookings, payments, payouts, wallet, sessions, notifications, admin, and safety.
 
@@ -40,6 +41,8 @@ The prototype typography is self-hosted through `@happi/fonts`:
 - Fraunces Variable for titles and display headings.
 - DM Sans Variable for body copy and interface controls.
 - The Lovable camera/debug font is intentionally excluded.
+
+The shared palette follows the prototype's warm off-white, cream, sand, deep-green, and muted green-gray foundation. The approved brand anchors are `#194e33` (primary) and `#dc7a44` (secondary).
 
 ## Sensitive-data rules
 
