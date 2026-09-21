@@ -10,7 +10,6 @@ coverage/
 .env
 .env.*
 !.env.example
-!.env.railway.example
 !.env.test.example
 
 # Logs and editor files

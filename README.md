@@ -75,7 +75,7 @@ The committed environment examples contain local-only placeholders. Never commit
 
 The shared development environment is designed for Railway with private PostgreSQL and Redis services. The API supports Railway's injected `PORT`, production-built TypeORM migrations, and the `/api/v1/health` deployment health check.
 
-Use [.env.railway.example](.env.railway.example) as the API variable checklist and follow the [Railway development guide](docs/railway-development.md). Database and Redis credentials must be attached through Railway reference variables rather than copied into this repository.
+Follow the [Railway development guide](docs/railway-development.md) for the API variable checklist. Database and Redis credentials must be attached through Railway reference variables rather than copied into this repository.
 
 ## Common commands
 

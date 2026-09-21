@@ -57,7 +57,7 @@ REDIS_URL=${{Redis.REDIS_URL}}
 
 The names `Postgres` and `Redis` must match the actual Railway service names. Railway's editor offers autocomplete for references.
 
-Copy the remaining safe variable names from `.env.railway.example`. Generate unique values for `JWT_SECRET` and `ENCRYPTION_KEY`, then seal sensitive variables in Railway. Set `WEB_URL` and `ADMIN_URL` to the exact public development origins before authentication is enabled.
+Configure `NODE_ENV=development` and `DATABASE_SSL=true`. Generate unique values for `JWT_SECRET` and `ENCRYPTION_KEY`, then seal sensitive variables in Railway. Set `WEB_URL` and `ADMIN_URL` to the exact public development origins before authentication is enabled. Provider variables can remain unset until their integrations are implemented.
 
 Do not copy database-service-only values such as `PGDATA`, `PGHOST`, `POSTGRES_PASSWORD`, or `REDIS_PASSWORD` into the API service. `DATABASE_URL` and `REDIS_URL` already contain everything the clients need.
 
