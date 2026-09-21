@@ -114,7 +114,7 @@ This covers auth, clients, therapists, verification, availability, bookings, pay
 
 Provider-specific choices remain deferred until their requirements are agreed: identity/authentication, Adyen payment and payout design, video/voice, email, document storage, credential verification, session recording, and chat.
 
-See [the architecture notes](docs/architecture.md) for boundaries, data decisions, sensitive-data rules, and deferred decisions. The original [scaffolding guide](happi-monorepo-scaffolding.md) remains as the source layout brief.
+See [the architecture notes](docs/architecture.md) for boundaries, data decisions, sensitive-data rules, and deferred decisions.
 
 ## Development principles
 
