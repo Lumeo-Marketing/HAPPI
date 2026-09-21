@@ -1,6 +1,10 @@
 # Railway development environment
 
-This document configures the shared development environment. Local development continues to use `docker-compose.dev.yml` and `.env`.
+This document configures the shared development environment. Local development continues to use `docker-compose.dev.yml` and `.env.development.local`.
+
+The ignored root `.env` contains the Railway development connection values, while the ignored root `.env.development.local` contains the local Docker values. `pnpm dev` selects `.env`; `pnpm dev:local` selects `.env.development.local`.
+
+The root `.env` is kept locally as requested and is not uploaded by Git. Its private `*.railway.internal` hosts only resolve inside Railway, so Railway deployments must still receive `DATABASE_URL` and `REDIS_URL` from service reference variables in the dashboard. Use `dev:local` when running on this computer.
 
 ## Topology
 

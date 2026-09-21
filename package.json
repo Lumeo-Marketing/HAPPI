@@ -11,6 +11,7 @@
   "scripts": {
     "build": "turbo run build",
     "dev": "turbo run dev",
+    "dev:local": "ENV_FILE=../../.env.development.local turbo run dev",
     "dev:web": "pnpm --filter @happi/web dev",
     "dev:admin": "pnpm --filter @happi/admin dev",
     "dev:api": "pnpm --filter @happi/api dev",

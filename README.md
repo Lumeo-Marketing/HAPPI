@@ -52,10 +52,10 @@ The PostgreSQL/TypeORM and Redis setup follows the local infrastructure approach
 nvm use
 corepack enable
 pnpm install
-cp .env.example .env
+cp .env.example .env.development.local
 pnpm services:up
-pnpm --filter @happi/api migration:run
-pnpm dev
+pnpm --filter @happi/api migration:run:local
+pnpm dev:local
 ```
 
 Local services:
@@ -81,6 +81,7 @@ Use [.env.railway.example](.env.railway.example) as the API variable checklist a
 
 ```bash
 pnpm dev             # run all apps
+pnpm dev:local       # run all apps against local Docker services
 pnpm dev:web         # web only
 pnpm dev:admin       # admin only
 pnpm dev:api         # API only
@@ -97,6 +98,7 @@ pnpm --filter @happi/api migration:create -- src/database/migrations/name
 pnpm --filter @happi/api migration:generate
 pnpm --filter @happi/api migration:show
 pnpm --filter @happi/api migration:run
+pnpm --filter @happi/api migration:run:local
 pnpm --filter @happi/api migration:revert
 ```
 

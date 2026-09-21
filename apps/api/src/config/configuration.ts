@@ -33,3 +33,5 @@ export function configuration() {
     },
   }
 }
+
+export const environmentFile = process.env.ENV_FILE ?? '../../.env'

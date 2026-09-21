@@ -1,9 +1,12 @@
 import 'reflect-metadata'
-import 'dotenv/config'
 import { ConfigService } from '@nestjs/config'
+import dotenv from 'dotenv'
 import { DataSource } from 'typeorm'
 
+import { environmentFile } from '../config/configuration'
 import { databaseOptions } from './typeorm.config'
+
+dotenv.config({ path: environmentFile })
 
 const dataSource = new DataSource({
   ...databaseOptions(new ConfigService(process.env)),

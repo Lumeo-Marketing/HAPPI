@@ -3,7 +3,11 @@ import { ConfigModule } from '@nestjs/config'
 import { TypeOrmModule } from '@nestjs/typeorm'
 
 import { AppController } from './app.controller'
-import { configuration, validateEnvironment } from './config/configuration'
+import {
+  configuration,
+  environmentFile,
+  validateEnvironment,
+} from './config/configuration'
 import { createTypeOrmOptions } from './database/typeorm.config'
 import { RedisModule } from './infrastructure/redis/redis.module'
 import { AdminModule } from './modules/admin/admin.module'
@@ -25,6 +29,7 @@ import { WalletModule } from './modules/wallet/wallet.module'
     ConfigModule.forRoot({
       isGlobal: true,
       cache: true,
+      envFilePath: environmentFile,
       load: [configuration],
       validate: validateEnvironment,
     }),
