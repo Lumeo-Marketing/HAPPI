@@ -2,7 +2,8 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "noEmit": true,
-    "rootDir": "."
+    "rootDir": ".",
+    "tsBuildInfoFile": "./node_modules/.cache/tsconfig.spec.tsbuildinfo"
   },
   "include": ["src/**/*.ts", "test/**/*.ts", "**/*.spec.ts"]
 }

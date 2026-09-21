@@ -1,6 +1,7 @@
 {
   "extends": "@happi/tsconfig/nextjs.json",
   "compilerOptions": {
+    "tsBuildInfoFile": "./node_modules/.cache/tsconfig.tsbuildinfo",
     "paths": {
       "@/*": ["./src/*"]
     }
