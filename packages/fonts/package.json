@@ -1,0 +1,13 @@
+{
+  "name": "@happi/fonts",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./fonts.css": "./src/fonts.css"
+  },
+  "dependencies": {
+    "@fontsource-variable/dm-sans": "^5.3.0",
+    "@fontsource-variable/fraunces": "^5.3.0"
+  }
+}

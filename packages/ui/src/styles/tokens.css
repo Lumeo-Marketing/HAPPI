@@ -1,0 +1,15 @@
+:root {
+  --happi-background: 42 38% 97%;
+  --happi-foreground: 157 30% 12%;
+  --happi-surface: 0 0% 100%;
+  --happi-muted-foreground: 156 10% 38%;
+  --happi-primary: 158 53% 28%;
+  --happi-primary-foreground: 0 0% 100%;
+  --happi-secondary: 37 77% 88%;
+  --happi-secondary-foreground: 157 30% 12%;
+  --happi-border: 145 16% 84%;
+  --happi-radius-sm: 0.375rem;
+  --happi-radius-md: 0.625rem;
+  --happi-radius-lg: 1rem;
+  --happi-shadow-md: 0 1rem 3rem hsl(157 30% 12% / 0.08);
+}

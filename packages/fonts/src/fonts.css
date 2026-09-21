@@ -1,0 +1,8 @@
+@import '@fontsource-variable/dm-sans';
+@import '@fontsource-variable/fraunces';
+
+:root {
+  --happi-font-body:
+    'DM Sans Variable', 'DM Sans', ui-sans-serif, system-ui, sans-serif;
+  --happi-font-title: 'Fraunces Variable', Fraunces, ui-serif, Georgia, serif;
+}

@@ -1,0 +1,10 @@
+packages:
+  - 'apps/*'
+  - 'packages/*'
+  - 'tooling/*'
+
+allowBuilds:
+  '@nestjs/core': true
+  '@parcel/watcher': true
+  sharp: true
+  unrs-resolver: true

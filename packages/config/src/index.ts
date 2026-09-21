@@ -1,0 +1,3 @@
+export const HAPPI_COMMISSION_RATE = 0.1
+export const SUPPORTED_CURRENCIES = ['NGN', 'USD'] as const
+export const DEFAULT_SESSION_DURATION_MINUTES = 50

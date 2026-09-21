@@ -1,0 +1,30 @@
+{
+  "name": "@happi/ui",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./button": "./src/components/button.tsx",
+    "./styles.css": "./src/styles/globals.css"
+  },
+  "scripts": {
+    "lint": "eslint src",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@happi/utils": "workspace:*",
+    "@radix-ui/react-slot": "^1.2.3",
+    "class-variance-authority": "^0.7.1"
+  },
+  "devDependencies": {
+    "@happi/eslint-config": "workspace:*",
+    "@happi/tsconfig": "workspace:*",
+    "@types/react": "^19.1.12",
+    "eslint": "^9.39.1",
+    "typescript": "^5.9.3"
+  },
+  "peerDependencies": {
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  }
+}

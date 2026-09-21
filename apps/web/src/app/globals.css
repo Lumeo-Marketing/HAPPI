@@ -1,0 +1,21 @@
+@import 'tailwindcss';
+@import '@happi/ui/styles.css';
+@import '@happi/fonts/fonts.css';
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: hsl(var(--happi-background));
+  color: hsl(var(--happi-foreground));
+  font-family: var(--happi-font-body);
+}
+
+main {
+  display: grid;
+  min-height: 100vh;
+  place-items: center;
+  padding: 2rem;
+}

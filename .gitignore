@@ -1,0 +1,23 @@
+# Dependencies and build output
+node_modules/
+.next/
+dist/
+coverage/
+.turbo/
+*.tsbuildinfo
+
+# Environment and credentials
+.env
+.env.*
+!.env.example
+!.env.test.example
+
+# Logs and editor files
+*.log
+.DS_Store
+.idea/
+.vscode/
+
+# Local uploads and generated files
+uploads/
+tmp/

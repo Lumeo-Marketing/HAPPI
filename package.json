@@ -1,0 +1,32 @@
+{
+  "name": "happi",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Culturally relevant mental-health care for Africans at home and abroad.",
+  "license": "UNLICENSED",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "packageManager": "pnpm@11.24.0",
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "dev:web": "pnpm --filter @happi/web dev",
+    "dev:admin": "pnpm --filter @happi/admin dev",
+    "dev:api": "pnpm --filter @happi/api dev",
+    "lint": "turbo run lint",
+    "test": "turbo run test",
+    "typecheck": "turbo run typecheck",
+    "check": "pnpm lint && pnpm typecheck && pnpm test && pnpm build",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "services:up": "docker compose -f docker-compose.dev.yml up -d",
+    "services:down": "docker compose -f docker-compose.dev.yml down",
+    "services:logs": "docker compose -f docker-compose.dev.yml logs -f"
+  },
+  "devDependencies": {
+    "prettier": "^3.6.2",
+    "turbo": "^2.11.2",
+    "typescript": "^5.9.3"
+  }
+}

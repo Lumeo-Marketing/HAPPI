@@ -1,0 +1,4 @@
+{
+  "extends": "@happi/tsconfig/base.json",
+  "include": ["src"]
+}
