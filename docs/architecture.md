@@ -16,6 +16,7 @@ Both frontends consume `@happi/ui`, `@happi/fonts`, and the other shared package
 ## Application boundaries
 
 - `apps/web` serves public discovery plus authenticated client and therapist journeys.
+- `apps/web` exposes a thin `/api/*` backend-for-frontend proxy to the NestJS API; browser code never needs the API's private service address.
 - `apps/admin` is separately deployed and restricted to HAPPI operations staff.
 - `apps/api` owns authorization, business rules, persistence, payments, session access, auditability, and provider integrations.
 - A future `apps/worker` can consume the same packages when reminders, email delivery, payment reconciliation, and payouts move to BullMQ jobs.

@@ -36,6 +36,7 @@ Shared application chrome is exposed as framework-neutral `AuthShell` and `Dashb
 - Next.js for the client and therapist web experience
 - React + Vite for admin operations
 - NestJS for the API
+- Next.js server-side API proxy for the web backend-for-frontend boundary
 - PostgreSQL 15 + TypeORM for durable data
 - Redis 7 for cache, coordination, and future BullMQ-backed work
 - TypeScript, Zod, Tailwind CSS, Radix primitives, and shared design tokens
@@ -70,6 +71,10 @@ Local services:
 | Health     | `http://localhost:4000/api/v1/health` | API liveness                  |
 | PostgreSQL | `localhost:5432`                      | `happi_dev` database          |
 | Redis      | `localhost:6379`                      | Ephemeral infrastructure      |
+
+Browser requests from the web app should use `/api/*`. The Next.js catch-all proxy forwards them to `API_INTERNAL_URL`, which defaults locally to `http://localhost:4000/api/v1`. The upstream URL remains server-only and must never use a `NEXT_PUBLIC_` prefix.
+
+The auth module boundary is mounted at `/api/v1/auth`, and is reachable from the web app through `/api/auth`. Authentication behavior and endpoints will be implemented separately.
 
 The committed environment examples contain local-only placeholders. Never commit real credentials or production secrets.
 

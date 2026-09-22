@@ -19,6 +19,8 @@ HAPPI API --private--> Postgres
 
 Keep PostgreSQL and Redis private. Only the API needs a public domain.
 
+If the web app is also deployed on Railway, set its server-only `API_INTERNAL_URL` to the API's private address, including `/api/v1`. Do not prefix this variable with `NEXT_PUBLIC_`.
+
 ## API service
 
 Connect the HAPPI GitHub repository to a Railway service. Because this is a shared pnpm monorepo, retain the repository root as the service root so workspace packages remain available.
