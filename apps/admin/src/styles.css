@@ -9,7 +9,7 @@ body {
   font-family: var(--happi-font-body);
 }
 
-main {
+.happi-foundation-main {
   display: grid;
   min-height: 100vh;
   place-items: center;

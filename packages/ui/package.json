@@ -4,7 +4,9 @@
   "private": true,
   "type": "module",
   "exports": {
+    "./auth-shell": "./src/layouts/auth-shell.tsx",
     "./button": "./src/components/button.tsx",
+    "./dashboard-shell": "./src/layouts/dashboard-shell.tsx",
     "./styles.css": "./src/styles/globals.css"
   },
   "scripts": {

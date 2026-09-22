@@ -1,5 +1,114 @@
 @import './tokens.css';
 
+.happi-auth-shell {
+  min-height: 100vh;
+  min-height: 100svh;
+  background: var(--happi-background);
+}
+
+.happi-auth-shell__visual {
+  min-height: 16rem;
+  overflow: hidden;
+  background: var(--happi-gradient-calm);
+  color: var(--happi-primary-foreground);
+}
+
+.happi-auth-shell__main {
+  display: grid;
+  min-width: 0;
+  min-height: inherit;
+  place-items: center;
+  padding: clamp(1.5rem, 5vw, 4rem);
+}
+
+.happi-auth-shell--with-visual .happi-auth-shell__main {
+  min-height: auto;
+}
+
+.happi-auth-shell__content {
+  width: min(28rem, 100%);
+}
+
+.happi-auth-shell__brand {
+  margin-bottom: 2.5rem;
+  color: var(--happi-primary);
+  font-family: var(--happi-font-title);
+  font-size: 1.75rem;
+  font-weight: 600;
+}
+
+.happi-auth-shell__footer {
+  margin-top: 2rem;
+  color: var(--happi-muted-foreground);
+  font-size: 0.875rem;
+}
+
+.happi-dashboard-shell {
+  display: grid;
+  min-height: 100vh;
+  min-height: 100svh;
+  background: var(--happi-background);
+}
+
+.happi-dashboard-shell__sidebar {
+  padding: 1rem;
+  border-bottom: 1px solid var(--happi-border);
+  background: var(--happi-surface);
+}
+
+.happi-dashboard-shell__workspace {
+  display: grid;
+  min-width: 0;
+  grid-template-rows: auto 1fr;
+}
+
+.happi-dashboard-shell__header {
+  position: sticky;
+  z-index: 10;
+  top: 0;
+  padding: 1rem clamp(1rem, 3vw, 2rem);
+  border-bottom: 1px solid var(--happi-border);
+  background: color-mix(in oklab, var(--happi-background) 92%, transparent);
+  backdrop-filter: blur(0.75rem);
+}
+
+.happi-dashboard-shell__content {
+  min-width: 0;
+  padding: clamp(1rem, 3vw, 2rem);
+}
+
+@media (min-width: 64rem) {
+  .happi-auth-shell--with-visual {
+    display: grid;
+    grid-template-columns: minmax(22rem, 1fr) minmax(28rem, 1fr);
+  }
+
+  .happi-auth-shell__visual {
+    min-height: 100vh;
+    min-height: 100svh;
+  }
+
+  .happi-auth-shell--with-visual .happi-auth-shell__main {
+    min-height: 100vh;
+    min-height: 100svh;
+  }
+
+  .happi-dashboard-shell {
+    grid-template-columns: minmax(15rem, 18rem) minmax(0, 1fr);
+  }
+
+  .happi-dashboard-shell__sidebar {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    height: 100svh;
+    padding: 1.5rem;
+    border-right: 1px solid var(--happi-border);
+    border-bottom: 0;
+    overflow-y: auto;
+  }
+}
+
 .happi-card {
   width: min(42rem, 100%);
   padding: clamp(1.5rem, 5vw, 4rem);

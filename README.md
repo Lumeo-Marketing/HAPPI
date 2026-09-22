@@ -28,6 +28,8 @@ docs/              Architecture and engineering decisions
 
 The public web app and admin dashboard both consume `@happi/ui`. Fraunces is the shared title/display face and DM Sans is the shared body/interface face, matching the approved prototype direction.
 
+Shared application chrome is exposed as framework-neutral `AuthShell` and `DashboardShell` components from `@happi/ui`. Apps provide their own navigation, authentication state, routing, and role-specific content through shell slots.
+
 ## Technology
 
 - pnpm + Turborepo

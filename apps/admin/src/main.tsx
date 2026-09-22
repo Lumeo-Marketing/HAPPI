@@ -8,7 +8,7 @@ import './styles.css'
 
 function App() {
   return (
-    <main>
+    <main className="happi-foundation-main">
       <section className="happi-card">
         <p className="happi-eyebrow">HAPPI Operations</p>
         <h1>Admin foundation</h1>
