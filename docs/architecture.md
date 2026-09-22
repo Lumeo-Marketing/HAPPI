@@ -23,7 +23,7 @@ Both frontends consume `@happi/ui`, `@happi/fonts`, and the other shared package
 
 ## Data infrastructure
 
-HAPPI follows the proven local pattern in `oss-server`:
+HAPPI's data infrastructure is designed around the following responsibilities:
 
 - PostgreSQL 15 is the system of record.
 - TypeORM migrations are the only production schema-change mechanism; `synchronize` stays disabled.
