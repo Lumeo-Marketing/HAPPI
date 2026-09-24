@@ -1,0 +1,726 @@
+openapi: 3.0.3
+info:
+  title: HAPPI Authentication API
+  version: 1.0.0
+  description: |
+    Import this file into Postman as an OpenAPI definition and choose Postman
+    Collection. The server URL below points to the local Nest API; change it
+    in Postman for another environment. Send JSON for every POST request.
+
+    Suggested test flow: register, verify the email OTP, log in, call /auth/me
+    with the access token, refresh, then log out. A registered account cannot
+    log in until its email is verified. Use an email address you can receive
+    mail at; registering the same email twice returns 409.
+
+    Set Postman variables verificationOtp, accessToken, refreshToken, and
+    passwordResetToken from the email OTP or development-only token fields
+    and login/refresh responses. The request examples use these variable names.
+    For GET /auth/me, set Bearer
+    Token in Postman to {{accessToken}}. After every refresh, replace the
+    refreshToken variable with the newly returned value.
+
+    There are no path or API query parameters on these endpoints. Copy the
+    verification email and OTP into the JSON body of /auth/verify-email. Password reset
+    continues to use a token in the JSON body of /auth/password-reset/confirm.
+
+    Without Resend, local testing can set AUTH_DEV_RETURN_TOKENS=true in
+    .env.development.local and run the API with ENV_FILE=../../.env.development.local.
+    Only requests from localhost to a development API using a local database
+    can receive devVerificationOtp or devPasswordResetToken. The verification
+    value is a six-digit, one-time OTP. Do not use this mode on a shared host.
+    Auth routes with rate limits still require Redis.
+servers:
+  - url: http://localhost:4000/api/v1
+    description: Local development API
+tags:
+  - name: Authentication
+    description: Account creation, email verification, sessions, and password reset
+paths:
+  /auth:
+    get:
+      tags: [Authentication]
+      operationId: getAuthStatus
+      summary: Check the auth module status
+      description: Public scaffold status route. This does not check a user session.
+      responses:
+        '200':
+          description: Auth module status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthStatus'
+              example:
+                statusCode: 200
+                module: auth
+                status: ready
+
+  /auth/register:
+    post:
+      tags: [Authentication]
+      operationId: register
+      summary: Register a client or therapist
+      description: |
+        Public registration accepts only client or therapist. Admin accounts
+        cannot be registered here. Email is normalized to lowercase. The new
+        account cannot log in until its email is verified. A verification OTP
+        is sent through Resend; if delivery later fails, the account remains
+        unverified and the user can request another OTP. In the local fallback,
+        copy devVerificationOtp from the response into otp.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+            example:
+              firstName: Ada
+              lastName: Okafor
+              email: ada@example.com
+              password: correct-horse-battery
+              role: client
+      responses:
+        '201':
+          description: Account created; email verification is required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VerificationMessageResponse'
+              examples:
+                email:
+                  summary: Resend is configured
+                  value:
+                    statusCode: 201
+                    message: Account created. Check your email to verify your account.
+                localDevelopment:
+                  summary: Local fallback without Resend
+                  value:
+                    statusCode: 201
+                    message: Account created. Check your email to verify your account.
+                    devVerificationOtp: '<six-digit OTP returned by the API>'
+        '400':
+          $ref: '#/components/responses/InvalidRequest'
+        '409':
+          description: An account already exists for this email
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                statusCode: 409
+                message: An account already exists for this email
+                error: Conflict
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '503':
+          $ref: '#/components/responses/DependencyUnavailable'
+
+  /auth/verify-email:
+    post:
+      tags: [Authentication]
+      operationId: verifyEmail
+      summary: Verify an email address
+      description: |
+        Submit the email and six-digit OTP from the verification email. The OTP
+        expires after 10 minutes and can be used once. A successful
+        verification allows the user to log in.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmailVerificationRequest'
+            example:
+              email: ada@example.com
+              otp: '{{verificationOtp}}'
+      responses:
+        '200':
+          description: Email verified
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+              example:
+                statusCode: 200
+                message: Email address verified. You can now log in.
+        '400':
+          description: Invalid request data, expired OTP, or already used OTP
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                invalidRequest:
+                  summary: Missing or malformed OTP
+                  value:
+                    statusCode: 400
+                    message: Invalid request data
+                    error: Bad Request
+                invalidToken:
+                  summary: Expired or already used OTP
+                  value:
+                    statusCode: 400
+                    message: This verification OTP is invalid or expired
+                    error: Bad Request
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '503':
+          $ref: '#/components/responses/DependencyUnavailable'
+
+  /auth/resend-verification-email:
+    post:
+      tags: [Authentication]
+      operationId: resendVerificationEmail
+      summary: Request another verification email
+      description: |
+        The normal response does not reveal whether the account is unknown,
+        verified, or still unverified. Existing valid verification OTPs remain
+        usable if a later email delivery fails. In the local fallback, an
+        unverified account also receives devVerificationOtp in the response.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmailRequest'
+            example:
+              email: ada@example.com
+      responses:
+        '200':
+          description: Generic response to avoid revealing account existence
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VerificationMessageResponse'
+              examples:
+                email:
+                  summary: Resend is configured, or account is unknown or verified
+                  value:
+                    statusCode: 200
+                    message: If an unverified account exists for this email, a verification email has been sent.
+                localDevelopment:
+                  summary: Local fallback for an unverified account
+                  value:
+                    statusCode: 200
+                    message: If an unverified account exists for this email, a verification email has been sent.
+                    devVerificationOtp: '<six-digit OTP returned by the API>'
+        '400':
+          $ref: '#/components/responses/InvalidRequest'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '503':
+          $ref: '#/components/responses/DependencyUnavailable'
+
+  /auth/login:
+    post:
+      tags: [Authentication]
+      operationId: login
+      summary: Log in with email and password
+      description: |
+        Requires a verified, active account. Returns a JWT access token valid
+        for 15 minutes and an opaque refresh token for the current session.
+        A pending therapist may log in after email verification; therapist
+        marketplace approval is a separate feature.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+            example:
+              email: ada@example.com
+              password: correct-horse-battery
+      responses:
+        '200':
+          description: Login succeeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenResponse'
+              example:
+                statusCode: 200
+                accessToken: '<JWT access token returned by the API>'
+                refreshToken: '<refresh token returned by the API>'
+                tokenType: Bearer
+                expiresIn: 900
+                user:
+                  id: 123e4567-e89b-12d3-a456-426614174000
+                  email: ada@example.com
+                  firstName: Ada
+                  lastName: Okafor
+                  role: client
+                  emailVerified: true
+        '400':
+          $ref: '#/components/responses/InvalidRequest'
+        '401':
+          description: Invalid credentials, unverified email, or inactive account
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                invalidCredentials:
+                  summary: Incorrect email or password
+                  value:
+                    statusCode: 401
+                    message: Invalid email or password
+                    error: Unauthorized
+                unverifiedEmail:
+                  summary: Email verification required
+                  value:
+                    statusCode: 401
+                    message: Please verify your email before logging in
+                    error: Unauthorized
+                inactiveAccount:
+                  summary: Suspended account
+                  value:
+                    statusCode: 401
+                    message: This account cannot log in
+                    error: Unauthorized
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '503':
+          $ref: '#/components/responses/DependencyUnavailable'
+
+  /auth/refresh:
+    post:
+      tags: [Authentication]
+      operationId: refreshSession
+      summary: Rotate the refresh token and get a new access token
+      description: |
+        Send the most recent refresh token in the JSON body. A successful call
+        returns a new refresh token and invalidates the previous one. The
+        account must still be verified and active.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefreshTokenRequest'
+            example:
+              refreshToken: '{{refreshToken}}'
+      responses:
+        '200':
+          description: New access and refresh tokens
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenResponse'
+              example:
+                statusCode: 200
+                accessToken: '<new JWT access token returned by the API>'
+                refreshToken: '<new refresh token returned by the API>'
+                tokenType: Bearer
+                expiresIn: 900
+                user:
+                  id: 123e4567-e89b-12d3-a456-426614174000
+                  email: ada@example.com
+                  firstName: Ada
+                  lastName: Okafor
+                  role: client
+                  emailVerified: true
+        '400':
+          $ref: '#/components/responses/InvalidRequest'
+        '401':
+          description: Invalid, expired, revoked, or already rotated refresh token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                statusCode: 401
+                message: Invalid refresh token
+                error: Unauthorized
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '503':
+          $ref: '#/components/responses/DependencyUnavailable'
+
+  /auth/logout:
+    post:
+      tags: [Authentication]
+      operationId: logout
+      summary: Log out the current session
+      description: |
+        Send the current refresh token in the JSON body. This revokes that
+        session, so its JWT access token also stops working on protected
+        routes. An unknown or already revoked token still gets the same
+        successful response.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefreshTokenRequest'
+            example:
+              refreshToken: '{{refreshToken}}'
+      responses:
+        '200':
+          description: Logout response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+              example:
+                statusCode: 200
+                message: Logged out
+        '400':
+          $ref: '#/components/responses/InvalidRequest'
+
+  /auth/me:
+    get:
+      tags: [Authentication]
+      operationId: getCurrentUser
+      summary: Get the signed-in user and role
+      description: |
+        Requires an unexpired access token and an active, unrevoked session.
+        In Postman, use the Authorization tab's Bearer Token type and paste
+        accessToken from login or refresh.
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Current user, without a password hash
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CurrentUserResponse'
+              example:
+                statusCode: 200
+                id: 123e4567-e89b-12d3-a456-426614174000
+                email: ada@example.com
+                firstName: Ada
+                lastName: Okafor
+                role: client
+                emailVerified: true
+        '401':
+          description: Missing or invalid access token, or revoked session
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                statusCode: 401
+                message: Unauthorized
+                error: Unauthorized
+  /auth/password-reset/request:
+    post:
+      tags: [Authentication]
+      operationId: requestPasswordReset
+      summary: Request a password reset token
+      description: |
+        The normal response does not reveal whether an account exists. A
+        verified, active account receives a Resend email containing a reset
+        token. The token expires after 30 minutes.
+        In the local fallback, a verified active account receives
+        devPasswordResetToken in the response; copy it into passwordResetToken.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmailRequest'
+            example:
+              email: ada@example.com
+      responses:
+        '200':
+          description: Generic response to avoid revealing account existence
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PasswordResetRequestResponse'
+              examples:
+                email:
+                  summary: Resend is configured, or account is not eligible
+                  value:
+                    statusCode: 200
+                    message: If an account exists for this email, a password reset email has been sent.
+                localDevelopment:
+                  summary: Local fallback for a verified active account
+                  value:
+                    statusCode: 200
+                    message: If an account exists for this email, a password reset email has been sent.
+                    devPasswordResetToken: '<one-time token returned by the API>'
+        '400':
+          $ref: '#/components/responses/InvalidRequest'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '503':
+          $ref: '#/components/responses/DependencyUnavailable'
+
+  /auth/password-reset/confirm:
+    post:
+      tags: [Authentication]
+      operationId: confirmPasswordReset
+      summary: Set a new password with a reset token
+      description: |
+        Submit the token from the reset link with a new password. The token
+        can be used once. A successful reset revokes all existing sessions;
+        log in again with the new password.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PasswordResetConfirmRequest'
+            example:
+              token: '{{passwordResetToken}}'
+              newPassword: another-secure-password
+      responses:
+        '200':
+          description: Password updated and sessions revoked
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+              example:
+                statusCode: 200
+                message: Password updated. Log in with your new password.
+        '400':
+          description: Invalid request data, expired token, or already used token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                invalidRequest:
+                  summary: Missing token or invalid new password
+                  value:
+                    statusCode: 400
+                    message: Invalid request data
+                    error: Bad Request
+                invalidToken:
+                  summary: Expired or already used token
+                  value:
+                    statusCode: 400
+                    message: This reset link is invalid or expired
+                    error: Bad Request
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '503':
+          $ref: '#/components/responses/DependencyUnavailable'
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Use accessToken returned by login or refresh.
+  schemas:
+    AuthStatus:
+      type: object
+      required: [statusCode, module, status]
+      properties:
+        statusCode:
+          type: integer
+          example: 200
+        module:
+          type: string
+          enum: [auth]
+        status:
+          type: string
+          enum: [ready]
+    RegisterRequest:
+      type: object
+      required: [firstName, lastName, email, password, role]
+      properties:
+        firstName:
+          type: string
+          minLength: 2
+          maxLength: 60
+        lastName:
+          type: string
+          minLength: 2
+          maxLength: 60
+        email:
+          type: string
+          format: email
+          description: Trimmed and lowercased by the API.
+        password:
+          type: string
+          format: password
+          minLength: 8
+          writeOnly: true
+        role:
+          type: string
+          enum: [client, therapist]
+    EmailRequest:
+      type: object
+      required: [email]
+      properties:
+        email:
+          type: string
+          format: email
+          description: Trimmed and lowercased by the API.
+    EmailVerificationRequest:
+      type: object
+      required: [email, otp]
+      properties:
+        email:
+          type: string
+          format: email
+          description: Same email address used during registration.
+        otp:
+          type: string
+          pattern: '^\d{6}$'
+          description: Six-digit OTP from the verification email; expires after 10 minutes.
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          format: password
+          minLength: 1
+          writeOnly: true
+    RefreshTokenRequest:
+      type: object
+      required: [refreshToken]
+      properties:
+        refreshToken:
+          type: string
+          minLength: 40
+          maxLength: 256
+          description: Latest refreshToken returned by login or refresh.
+    PasswordResetConfirmRequest:
+      type: object
+      required: [token, newPassword]
+      properties:
+        token:
+          type: string
+          minLength: 32
+          maxLength: 512
+        newPassword:
+          type: string
+          format: password
+          minLength: 8
+          writeOnly: true
+    AuthUser:
+      type: object
+      required: [id, email, firstName, lastName, role, emailVerified]
+      properties:
+        id:
+          type: string
+          format: uuid
+        email:
+          type: string
+          format: email
+        firstName:
+          type: string
+        lastName:
+          type: string
+        role:
+          type: string
+          enum: [client, therapist, admin]
+        emailVerified:
+          type: boolean
+    CurrentUserResponse:
+      allOf:
+        - $ref: '#/components/schemas/AuthUser'
+        - type: object
+          required: [statusCode]
+          properties:
+            statusCode:
+              type: integer
+              example: 200
+    TokenResponse:
+      type: object
+      required: [statusCode, accessToken, refreshToken, tokenType, expiresIn, user]
+      properties:
+        statusCode:
+          type: integer
+          example: 200
+        accessToken:
+          type: string
+          description: JWT access token, valid for 15 minutes.
+        refreshToken:
+          type: string
+          description: Opaque token for this session; the API only stores its hash.
+        tokenType:
+          type: string
+          enum: [Bearer]
+        expiresIn:
+          type: integer
+          description: Access token lifetime in seconds.
+          example: 900
+        user:
+          $ref: '#/components/schemas/AuthUser'
+    MessageResponse:
+      type: object
+      required: [statusCode, message]
+      properties:
+        statusCode:
+          type: integer
+          example: 200
+        message:
+          type: string
+    VerificationMessageResponse:
+      allOf:
+        - $ref: '#/components/schemas/MessageResponse'
+        - type: object
+          properties:
+            devVerificationOtp:
+              type: string
+              pattern: '^\d{6}$'
+              description: Local fallback only; copy into otp in Postman.
+    PasswordResetRequestResponse:
+      allOf:
+        - $ref: '#/components/schemas/MessageResponse'
+        - type: object
+          properties:
+            devPasswordResetToken:
+              type: string
+              description: Local fallback only; copy into passwordResetToken in Postman.
+    ErrorResponse:
+      type: object
+      required: [statusCode, message]
+      properties:
+        statusCode:
+          type: integer
+        message:
+          type: string
+        error:
+          type: string
+          description: NestJS error label when present.
+  responses:
+    InvalidRequest:
+      description: Invalid JSON request data
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            statusCode: 400
+            message: Invalid request data
+            error: Bad Request
+    RateLimited:
+      description: Too many attempts for this IP or email; try again after the limit window
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            statusCode: 429
+            message: Too many attempts. Try again later.
+    DependencyUnavailable:
+      description: Redis is unavailable, or a route requiring email has neither Resend nor the local fallback
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            redisUnavailable:
+              summary: Redis rate limiter unavailable
+              value:
+                statusCode: 503
+                message: Authentication temporarily unavailable
+                error: Service Unavailable
+            emailNotConfigured:
+              summary: Resend key or verified sender missing
+              value:
+                statusCode: 503
+                message: Email delivery is not configured
+                error: Service Unavailable

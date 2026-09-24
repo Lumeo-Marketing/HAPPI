@@ -11,6 +11,7 @@ coverage/
 .env.*
 !.env.example
 !.env.test.example
+.env.development.local
 
 # Logs and editor files
 *.log

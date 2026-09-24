@@ -1,4 +1,5 @@
 import type { NextRequest } from 'next/server'
+import { NextResponse } from 'next/server'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -19,6 +20,41 @@ const responseHeadersToRemove = [
   'content-length',
   'transfer-encoding',
 ]
+const accessTokenCookie = 'happi_access_token'
+const refreshTokenCookie = 'happi_refresh_token'
+const refreshTokenMaxAge = 30 * 24 * 60 * 60
+
+interface TokenResponseBody {
+  statusCode: number
+  accessToken: string
+  refreshToken: string
+  expiresIn: number
+  user: Record<string, unknown>
+}
+
+function sessionCookieOptions(maxAge: number) {
+  return {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax' as const,
+    path: '/',
+    maxAge,
+  }
+}
+
+function missingSessionResponse() {
+  return NextResponse.json(
+    { statusCode: 401, message: 'Unauthorized', error: 'Unauthorized' },
+    { status: 401 },
+  )
+}
+
+function clearedSessionResponse() {
+  const response = NextResponse.json({ statusCode: 200, message: 'Logged out' })
+  response.cookies.delete(accessTokenCookie)
+  response.cookies.delete(refreshTokenCookie)
+  return response
+}
 
 function getApiBaseUrl(): URL {
   const value = process.env.API_INTERNAL_URL ?? 'http://localhost:4000/api/v1'
@@ -35,6 +71,11 @@ function getApiBaseUrl(): URL {
 async function proxyRequest(request: NextRequest, context: ProxyContext) {
   try {
     const { path } = await context.params
+    const routePath = path.join('/')
+    const isLogin = routePath === 'auth/login'
+    const isRefresh = routePath === 'auth/refresh'
+    const isLogout = routePath === 'auth/logout'
+    const isCurrentUser = routePath === 'auth/me'
     const upstreamUrl = new URL(
       path.map(encodeURIComponent).join('/'),
       getApiBaseUrl(),
@@ -47,13 +88,62 @@ async function proxyRequest(request: NextRequest, context: ProxyContext) {
     requestHeaders.set('x-forwarded-proto', request.nextUrl.protocol.slice(0, -1))
 
     const hasBody = !['GET', 'HEAD'].includes(request.method)
+    let requestBody: ArrayBuffer | string | undefined = hasBody
+      ? await request.arrayBuffer()
+      : undefined
+
+    if (isRefresh || isLogout) {
+      const refreshToken = request.cookies.get(refreshTokenCookie)?.value
+      if (!refreshToken) {
+        return isLogout ? clearedSessionResponse() : missingSessionResponse()
+      }
+
+      requestHeaders.set('content-type', 'application/json')
+      requestBody = JSON.stringify({ refreshToken })
+    }
+
+    if (isCurrentUser) {
+      const accessToken = request.cookies.get(accessTokenCookie)?.value
+      if (!accessToken) return missingSessionResponse()
+
+      requestHeaders.set('authorization', `Bearer ${accessToken}`)
+    }
+
     const upstreamResponse = await fetch(upstreamUrl, {
       method: request.method,
       headers: requestHeaders,
-      body: hasBody ? await request.arrayBuffer() : undefined,
+      body: requestBody,
       cache: 'no-store',
       redirect: 'follow',
     })
+
+    if ((isLogin || isRefresh) && upstreamResponse.ok) {
+      const body = (await upstreamResponse.json()) as TokenResponseBody
+      const response = NextResponse.json(
+        { statusCode: body.statusCode, user: body.user },
+        { status: upstreamResponse.status },
+      )
+
+      response.cookies.set(
+        accessTokenCookie,
+        body.accessToken,
+        sessionCookieOptions(body.expiresIn),
+      )
+      response.cookies.set(
+        refreshTokenCookie,
+        body.refreshToken,
+        sessionCookieOptions(refreshTokenMaxAge),
+      )
+      return response
+    }
+
+    if (isLogout) {
+      const body = await upstreamResponse.json()
+      const response = NextResponse.json(body, { status: upstreamResponse.status })
+      response.cookies.delete(accessTokenCookie)
+      response.cookies.delete(refreshTokenCookie)
+      return response
+    }
 
     const responseHeaders = new Headers(upstreamResponse.headers)
     responseHeadersToRemove.forEach((header) =>
@@ -67,7 +157,11 @@ async function proxyRequest(request: NextRequest, context: ProxyContext) {
     })
   } catch {
     return Response.json(
-      { message: 'The API is temporarily unavailable.' },
+      {
+        statusCode: 502,
+        message: 'The API is temporarily unavailable.',
+        error: 'Bad Gateway',
+      },
       { status: 502 },
     )
   }

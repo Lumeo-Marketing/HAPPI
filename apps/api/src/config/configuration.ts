@@ -16,6 +16,15 @@ const environmentSchema = z.object({
   DATABASE_URL: z.string().optional(),
   DATABASE_SSL: z.enum(['true', 'false']).default('false'),
   REDIS_URL: z.string().default('redis://localhost:6379'),
+  JWT_SECRET: z
+    .string()
+    .min(32)
+    .refine((value) => !value.startsWith('replace-with'), {
+      message: 'Set a real JWT_SECRET of at least 32 characters',
+    }),
+  RESEND_API_KEY: z.string().min(1).optional(),
+  EMAIL_FROM: z.email().default('notifications@example.com'),
+  AUTH_DEV_RETURN_TOKENS: z.enum(['true', 'false']).default('false'),
 })
 
 export type Environment = z.infer<typeof environmentSchema>
