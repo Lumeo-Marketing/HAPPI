@@ -3,7 +3,9 @@
   "compilerOptions": {
     "noEmit": true,
     "rootDir": ".",
+    "types": ["jest", "node"],
     "tsBuildInfoFile": "./node_modules/.cache/tsconfig.spec.tsbuildinfo"
   },
-  "include": ["src/**/*.ts", "test/**/*.ts", "**/*.spec.ts"]
+  "include": ["src/**/*.ts", "test/**/*.ts", "**/*.spec.ts"],
+  "exclude": ["node_modules", "dist"]
 }
