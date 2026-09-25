@@ -27,7 +27,8 @@ export interface RefreshTokenRequest {
 }
 
 export interface ResetPasswordRequest {
-  token: string
+  email: string
+  otp: string
   newPassword: string
 }
 
@@ -55,7 +56,7 @@ export interface MessageResponse {
   statusCode: number
   message: string
   devVerificationOtp?: string
-  devPasswordResetToken?: string
+  devPasswordResetOtp?: string
 }
 
 export interface ApiErrorResponse {
@@ -93,6 +94,7 @@ export interface CurrentUserResponse extends AuthUser {
 }
 
 const AUTH_BASE_URL = '/api/auth'
+let refreshPromise: Promise<AuthSessionResponse> | undefined
 
 async function authRequest<T>(
   path: string,
@@ -122,6 +124,19 @@ function post<TResponse, TBody>(path: string, body: TBody) {
   })
 }
 
+function refreshSession() {
+  if (!refreshPromise) {
+    refreshPromise = post<AuthSessionResponse, Record<string, never>>(
+      '/refresh',
+      {},
+    ).finally(() => {
+      refreshPromise = undefined
+    })
+  }
+
+  return refreshPromise
+}
+
 export const authService = {
   getStatus: () => authRequest<AuthStatusResponse>(''),
 
@@ -137,7 +152,7 @@ export const authService = {
   login: (body: LoginRequest) =>
     post<AuthSessionResponse, LoginRequest>('/login', body),
 
-  refresh: () => post<AuthSessionResponse, Record<string, never>>('/refresh', {}),
+  refresh: refreshSession,
 
   logout: () => post<MessageResponse, Record<string, never>>('/logout', {}),
 

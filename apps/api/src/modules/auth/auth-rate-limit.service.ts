@@ -43,7 +43,7 @@ export class AuthRateLimitService {
     email?: string,
   ): Promise<void> {
     const limit = limits[action]
-    const ip = request.ip ?? request.socket?.remoteAddress ?? 'unknown'
+    const ip = (request.ip ?? request.socket?.remoteAddress ?? 'unknown').trim().toLowerCase()
 
     await this.consume(action, 'ip', ip, limit.ip, limit.windowMs)
 

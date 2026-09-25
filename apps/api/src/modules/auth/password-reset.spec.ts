@@ -111,11 +111,12 @@ describe('password reset', () => {
     const { service, user, getDeliveredToken, getResetToken } = setup(true)
     const response = await service.requestPasswordReset({ email: user.email }, '127.0.0.1')
 
-    expect(response).toHaveProperty('devPasswordResetToken')
+    expect(response).toHaveProperty('devPasswordResetOtp')
     expect(getDeliveredToken()).toBeNull()
-    expect(getResetToken()?.tokenHash).not.toBe(response.devPasswordResetToken)
+    expect(getResetToken()?.tokenHash).not.toBe(response.devPasswordResetOtp)
     await service.confirmPasswordReset({
-      token: response.devPasswordResetToken!,
+      email: user.email,
+      otp: response.devPasswordResetOtp!,
       newPassword: 'a-new-secure-password',
     })
     expect(await new PasswordHasherService().verify('a-new-secure-password', user.passwordHash)).toBe(true)
@@ -143,14 +144,15 @@ describe('password reset', () => {
     const token = getDeliveredToken()!
 
     await service.confirmPasswordReset({
-      token,
+      email: user.email,
+      otp: token,
       newPassword: 'a-new-secure-password',
     })
 
     expect(await new PasswordHasherService().verify('a-new-secure-password', user.passwordHash)).toBe(true)
     expect(session.revokedAt).toBeInstanceOf(Date)
     await expect(
-      service.confirmPasswordReset({ token, newPassword: 'another-password' }),
+      service.confirmPasswordReset({ email: user.email, otp: token, newPassword: 'another-password' }),
     ).rejects.toBeInstanceOf(BadRequestException)
   })
 
@@ -161,7 +163,8 @@ describe('password reset', () => {
 
     await expect(
       service.confirmPasswordReset({
-        token: getDeliveredToken()!,
+        email: user.email,
+        otp: getDeliveredToken()!,
         newPassword: 'a-new-secure-password',
       }),
     ).rejects.toBeInstanceOf(BadRequestException)

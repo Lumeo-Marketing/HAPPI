@@ -5,7 +5,7 @@ import {
   passwordResetRequestSchema,
 } from '@happi/validation'
 import { useRouter } from 'next/navigation'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
 
 import {
@@ -17,12 +17,12 @@ import {
 import { authService, getApiErrorMessage } from '@/services/auth.service'
 
 interface ResetPasswordFormProps {
-  initialToken?: string
+  initialEmail?: string
   requestSent?: boolean
 }
 
 interface ResetErrors {
-  token?: string
+  otp?: string
   newPassword?: string
   confirmPassword?: string
 }
@@ -53,12 +53,13 @@ export function ForgotPasswordForm() {
     try {
       const response = await authService.requestPasswordReset(result.data)
 
-      if (response.devPasswordResetToken) {
+      if (response.devPasswordResetOtp) {
         sessionStorage.setItem(
-          'happi:dev-password-reset-token',
-          response.devPasswordResetToken,
+          'happi:dev-password-reset-otp',
+          response.devPasswordResetOtp,
         )
       }
+      sessionStorage.setItem('happi:dev-password-reset-email', result.data.email)
 
       router.push('/auth/reset-password?requested=1')
     } catch (error) {
@@ -82,7 +83,7 @@ export function ForgotPasswordForm() {
           <AuthFormMessage tone="error">{requestError}</AuthFormMessage>
         )}
         <AuthSubmitButton type="submit" loading={isSubmitting}>
-          Send reset token
+          Send reset code
         </AuthSubmitButton>
       </form>
     </AuthFormCard>
@@ -90,25 +91,22 @@ export function ForgotPasswordForm() {
 }
 
 export function ResetPasswordForm({
-  initialToken = '',
+  initialEmail = '',
   requestSent = false,
 }: ResetPasswordFormProps) {
   const router = useRouter()
-  const formRef = useRef<HTMLFormElement>(null)
   const [fieldErrors, setFieldErrors] = useState<ResetErrors>({})
   const [requestError, setRequestError] = useState<string>()
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [resetOtp, setResetOtp] = useState('')
+  const [resetEmail, setResetEmail] = useState(initialEmail)
 
   useEffect(() => {
-    if (initialToken) return
-
-    const savedToken = sessionStorage.getItem('happi:dev-password-reset-token')
-    const tokenInput = formRef.current?.elements.namedItem('token')
-
-    if (savedToken && tokenInput instanceof HTMLInputElement) {
-      tokenInput.value = savedToken
-    }
-  }, [initialToken])
+    const savedOtp = sessionStorage.getItem('happi:dev-password-reset-otp')
+    const savedEmail = sessionStorage.getItem('happi:dev-password-reset-email')
+    if (savedOtp) setResetOtp(savedOtp)
+    if (savedEmail) setResetEmail(savedEmail)
+  }, [])
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -125,7 +123,8 @@ export function ResetPasswordForm({
     }
 
     const result = passwordResetConfirmSchema.safeParse({
-      token: formData.get('token'),
+      email: resetEmail,
+      otp: resetOtp,
       newPassword,
     })
 
@@ -134,7 +133,7 @@ export function ResetPasswordForm({
 
       for (const issue of result.error.issues) {
         const field = issue.path[0]
-        if (field === 'token' || field === 'newPassword') {
+        if (field === 'otp' || field === 'newPassword') {
           errors[field] ??= issue.message
         }
       }
@@ -147,7 +146,8 @@ export function ResetPasswordForm({
 
     try {
       await authService.confirmPasswordReset(result.data)
-      sessionStorage.removeItem('happi:dev-password-reset-token')
+      sessionStorage.removeItem('happi:dev-password-reset-otp')
+      sessionStorage.removeItem('happi:dev-password-reset-email')
       router.push('/auth/login?reset=1')
     } catch (error) {
       setRequestError(getApiErrorMessage(error))
@@ -158,19 +158,16 @@ export function ResetPasswordForm({
 
   return (
     <AuthFormCard>
-      <form ref={formRef} className="grid gap-5" onSubmit={handleSubmit} noValidate>
+      <form className="grid gap-5" onSubmit={handleSubmit} noValidate>
         {requestSent && (
           <AuthFormMessage tone="success">
-            If an eligible account exists, a password reset token has been sent.
+            If an eligible account exists, a password reset code has been sent.
           </AuthFormMessage>
         )}
-        <AuthField
-          label="Reset token"
-          name="token"
-          autoComplete="one-time-code"
-          defaultValue={initialToken}
-          error={fieldErrors.token}
-        />
+        <label className="grid gap-2 text-[.85rem] text-[#112f22]">Verification code
+          <input className="min-h-[2.3rem] rounded-[.4rem] border border-[#e1d9cc] bg-[#fffdf8] px-3 py-2" value={resetOtp} onChange={(event) => setResetOtp(event.target.value)} inputMode="numeric" maxLength={6} autoComplete="one-time-code" />
+          {fieldErrors.otp && <span className="text-xs text-[#9b3f29]">{fieldErrors.otp}</span>}
+        </label>
         <AuthField
           label="New password"
           name="newPassword"

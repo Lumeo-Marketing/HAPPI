@@ -13,7 +13,7 @@ info:
     mail at; registering the same email twice returns 409.
 
     Set Postman variables verificationOtp, accessToken, refreshToken, and
-    passwordResetToken from the email OTP or development-only token fields
+    passwordResetOtp from the email OTP or development-only OTP fields
     and login/refresh responses. The request examples use these variable names.
     For GET /auth/me, set Bearer
     Token in Postman to {{accessToken}}. After every refresh, replace the
@@ -21,12 +21,12 @@ info:
 
     There are no path or API query parameters on these endpoints. Copy the
     verification email and OTP into the JSON body of /auth/verify-email. Password reset
-    continues to use a token in the JSON body of /auth/password-reset/confirm.
+    uses the email and one-time OTP in the JSON body of /auth/password-reset/confirm.
 
     Without Resend, local testing can set AUTH_DEV_RETURN_TOKENS=true in
     .env.development.local and run the API with ENV_FILE=../../.env.development.local.
     Only requests from localhost to a development API using a local database
-    can receive devVerificationOtp or devPasswordResetToken. The verification
+    can receive devVerificationOtp or devPasswordResetOtp. The verification
     value is a six-digit, one-time OTP. Do not use this mode on a shared host.
     Auth routes with rate limits still require Redis.
 servers:
@@ -406,13 +406,13 @@ paths:
     post:
       tags: [Authentication]
       operationId: requestPasswordReset
-      summary: Request a password reset token
+      summary: Request a password reset OTP
       description: |
         The normal response does not reveal whether an account exists. A
         verified, active account receives a Resend email containing a reset
-        token. The token expires after 30 minutes.
+        OTP. The OTP expires after 10 minutes.
         In the local fallback, a verified active account receives
-        devPasswordResetToken in the response; copy it into passwordResetToken.
+        devPasswordResetOtp in the response; copy it into otp.
       requestBody:
         required: true
         content:
@@ -439,7 +439,7 @@ paths:
                   value:
                     statusCode: 200
                     message: If an account exists for this email, a password reset email has been sent.
-                    devPasswordResetToken: '<one-time token returned by the API>'
+                    devPasswordResetOtp: '<six-digit OTP returned by the API>'
         '400':
           $ref: '#/components/responses/InvalidRequest'
         '429':
@@ -451,7 +451,7 @@ paths:
     post:
       tags: [Authentication]
       operationId: confirmPasswordReset
-      summary: Set a new password with a reset token
+      summary: Set a new password with a reset OTP
       description: |
         Submit the token from the reset link with a new password. The token
         can be used once. A successful reset revokes all existing sessions;
@@ -463,7 +463,8 @@ paths:
             schema:
               $ref: '#/components/schemas/PasswordResetConfirmRequest'
             example:
-              token: '{{passwordResetToken}}'
+              email: ada@example.com
+              otp: '{{passwordResetOtp}}'
               newPassword: another-secure-password
       responses:
         '200':
@@ -587,12 +588,14 @@ components:
           description: Latest refreshToken returned by login or refresh.
     PasswordResetConfirmRequest:
       type: object
-      required: [token, newPassword]
+      required: [email, otp, newPassword]
       properties:
-        token:
+        email:
           type: string
-          minLength: 32
-          maxLength: 512
+          format: email
+        otp:
+          type: string
+          pattern: '^\d{6}$'
         newPassword:
           type: string
           format: password
@@ -671,9 +674,10 @@ components:
         - $ref: '#/components/schemas/MessageResponse'
         - type: object
           properties:
-            devPasswordResetToken:
+            devPasswordResetOtp:
               type: string
-              description: Local fallback only; copy into passwordResetToken in Postman.
+              pattern: '^\d{6}$'
+              description: Local fallback only; copy into otp in Postman.
     ErrorResponse:
       type: object
       required: [statusCode, message]

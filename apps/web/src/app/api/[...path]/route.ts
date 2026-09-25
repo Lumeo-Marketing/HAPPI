@@ -102,11 +102,14 @@ async function proxyRequest(request: NextRequest, context: ProxyContext) {
       requestBody = JSON.stringify({ refreshToken })
     }
 
-    if (isCurrentUser) {
-      const accessToken = request.cookies.get(accessTokenCookie)?.value
-      if (!accessToken) return missingSessionResponse()
-
+    // The browser cannot read the httpOnly access-token cookie. Forward it
+    // for API requests so every protected backend endpoint receives auth.
+    requestHeaders.delete('authorization')
+    const accessToken = request.cookies.get(accessTokenCookie)?.value
+    if (accessToken) {
       requestHeaders.set('authorization', `Bearer ${accessToken}`)
+    } else if (isCurrentUser) {
+      return missingSessionResponse()
     }
 
     const upstreamResponse = await fetch(upstreamUrl, {

@@ -156,7 +156,7 @@ export function AccountPanel({
   return (
     <section className="mt-[1.8rem] rounded-[.65rem] border border-[#e1d9cc] bg-[#fffdf8] p-6 text-left">
       <nav
-        className="-mx-6 -mt-14 mb-[1.3rem] grid grid-cols-2 overflow-hidden rounded-[.55rem] bg-[#f0ede3]"
+        className="-mx-6 mt-10 md:-mt-14 mb-[1.3rem] grid grid-cols-2 overflow-hidden rounded-[.55rem] bg-[#f0ede3]"
         aria-label="Account access"
       >
         <Link

@@ -42,6 +42,9 @@ export function SessionControls({ forceSignIn = false }: { forceSignIn?: boolean
     try {
       await authService.logout()
       setUser(undefined)
+      sessionStorage.removeItem('happi:dev-verification-email')
+      sessionStorage.removeItem('happi:dev-verification-otp')
+      sessionStorage.removeItem('happi:dev-password-reset-token')
       setShowLogoutConfirmation(false)
       router.push('/auth/login')
       router.refresh()

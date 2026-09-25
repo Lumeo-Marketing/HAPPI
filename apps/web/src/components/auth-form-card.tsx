@@ -123,10 +123,10 @@ export function AuthSubmitButton({
 export function AuthFormMessage({ children, tone }: AuthFormMessageProps) {
   return (
     <p
-      className={`m-0 rounded-[.4rem] border px-3 py-2 text-[.82rem] ${
+      className={`m-0 text-[.82rem] ${
         tone === 'success'
-          ? 'border-[#b8d4c1] bg-[#edf7f0] text-[#195438]'
-          : 'border-[#e5b9ae] bg-[#fff1ed] text-[#9b3f29]'
+          ? 'text-[#195438]'
+          : 'text-[#9b3f29]'
       }`}
       role={tone === 'error' ? 'alert' : 'status'}
     >

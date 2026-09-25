@@ -6,7 +6,6 @@ import { SiteHeader } from '@/components/site-header'
 interface ResetPasswordPageProps {
   searchParams: Promise<{
     requested?: string | string[]
-    token?: string | string[]
   }>
 }
 
@@ -15,7 +14,6 @@ export default async function ResetPasswordPage({
 }: ResetPasswordPageProps) {
   const params = await searchParams
   const requested = params.requested === '1'
-  const token = typeof params.token === 'string' ? params.token : ''
 
   return (
     <main className="min-h-screen bg-[#fbf7ee] text-[#112f22]">
@@ -28,10 +26,10 @@ export default async function ResetPasswordPage({
           Create a new password
         </h1>
         <span className="block text-left text-[.87rem] text-[#566458]">
-          Use the token from your email and choose a new password.
+          Choose a new password for your Happi account.
         </span>
         <div className="mt-[1.8rem]">
-          <ResetPasswordForm initialToken={token} requestSent={requested} />
+          <ResetPasswordForm requestSent={requested} />
         </div>
         <Link
           className="mt-6 block text-center text-[.85rem] text-[#195438] no-underline"

@@ -15,7 +15,7 @@ export default function ForgotPasswordPage() {
           Reset your password
         </h1>
         <span className="block text-left text-[.87rem] text-[#566458]">
-          Enter your email and we&apos;ll send you a reset token.
+          Enter your email and we&apos;ll send you a reset code.
         </span>
         <div className="mt-[1.8rem]">
           <ForgotPasswordForm />

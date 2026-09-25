@@ -54,8 +54,8 @@ export class AuthEmailService {
       to: email,
       subject,
       html: isVerificationOtp
-        ? `<p>Your HAPPI email verification code is:</p><p><strong>${token}</strong></p><p>This code expires in 24 hours.</p>`
-        : `<p>Use this password reset token on the password reset screen:</p><p><strong>${token}</strong></p><p>This token expires in 30 minutes.</p>`,
+        ? `<p>Your HAPPI email verification code is:</p><p><strong>${token}</strong></p><p>This code expires in 10 minutes.</p>`
+        : `<p>Your HAPPI password reset code is:</p><p><strong>${token}</strong></p><p>This code expires in 10 minutes.</p>`,
     })
 
     if (result.error) {

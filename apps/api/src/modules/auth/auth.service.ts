@@ -32,7 +32,7 @@ import {
 } from './token.service'
 
 const verificationTokenLifetimeMs = 10 * 60 * 1000
-const passwordResetTokenLifetimeMs = 30 * 60 * 1000
+const passwordResetTokenLifetimeMs = 10 * 60 * 1000
 const verificationEmailMessage =
   'If an unverified account exists for this email, a verification email has been sent.'
 const passwordResetMessage =
@@ -89,9 +89,13 @@ export class AuthService {
 
   async verifyEmail({ email, otp }: EmailVerificationInput) {
     const user = await this.users.findOneBy({ email })
+    if (!user) {
+      throw new BadRequestException('This verification OTP is invalid or expired')
+    }
+
     const tokenHash = this.hashToken(otp)
     const verificationToken = await this.verificationTokens.findOneBy({
-      userId: user?.id,
+      userId: user.id,
       tokenHash,
       usedAt: IsNull(),
     })
@@ -271,7 +275,7 @@ export class AuthService {
     const user = await this.users.findOneBy({ email })
 
     if (user?.emailVerifiedAt && user.status === UserStatus.ACTIVE) {
-      const token = randomBytes(32).toString('base64url')
+      const token = randomInt(100000, 1000000).toString()
 
       await this.passwordResetTokens.save(
         this.passwordResetTokens.create({
@@ -283,7 +287,7 @@ export class AuthService {
       await this.writeAuditLog(user.id, AuthAuditEvent.PASSWORD_RESET_REQUESTED)
 
       if (returnDevToken) {
-        return { message: passwordResetMessage, devPasswordResetToken: token }
+        return { message: passwordResetMessage, devPasswordResetOtp: token }
       }
 
       try {
@@ -296,12 +300,12 @@ export class AuthService {
     return { message: passwordResetMessage }
   }
 
-  async confirmPasswordReset({ token, newPassword }: PasswordResetConfirmInput) {
-    const tokenHash = this.hashToken(token)
-    const resetToken = await this.passwordResetTokens.findOneBy({
-      tokenHash,
-      usedAt: IsNull(),
-    })
+  async confirmPasswordReset({ email, otp, newPassword }: PasswordResetConfirmInput) {
+    const user = await this.users.findOneBy({ email })
+    const tokenHash = this.hashToken(otp)
+    const resetToken = user
+      ? await this.passwordResetTokens.findOneBy({ userId: user.id, tokenHash, usedAt: IsNull() })
+      : null
 
     if (!resetToken || resetToken.expiresAt <= new Date()) {
       throw new BadRequestException('This reset link is invalid or expired')

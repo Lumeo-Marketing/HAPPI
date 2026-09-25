@@ -2,6 +2,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 
 import { SiteHeader } from '@/components/site-header'
+import { RoleHome } from '@/components/role-home'
 
 import heroImage from '../../public/images/hero-wellbeing.png'
 import adaezeImage from '../../public/images/therapist-adaeze.png'
@@ -16,6 +17,7 @@ const therapists = [
 
 export default function HomePage() {
   return (
+    <RoleHome>
     <main className="min-h-screen bg-[#fbf7ee] text-[#112f22]">
       <SiteHeader />
 
@@ -55,5 +57,6 @@ export default function HomePage() {
 
       <footer className="grid grid-cols-[minmax(16rem,.7fr)_1.3fr] gap-16 border-t border-[#e2d9ca] bg-[#fffdf7] px-[clamp(1.25rem,4.1vw,3.5rem)] py-[2.6rem] max-md:grid-cols-1 max-md:gap-6"><div><Link className="font-[family-name:var(--happi-font-title)] text-[1.65rem] font-bold text-[#194e33] no-underline" href="/">Happi</Link><p className="max-w-lg text-[.82rem] leading-[1.55] text-[#59665b]">Professional mental-health care that understands where you come from, wherever you are.</p></div><p className="max-w-lg text-[.82rem] leading-[1.55] text-[#59665b]">♢ &nbsp; Happi is not an emergency service. If you are in immediate danger, contact local emergency services. In Nigeria, call 112 or the Nigeria Suicide Prevention Initiative on 0806 210 6493.</p></footer>
     </main>
+    </RoleHome>
   )
 }

@@ -6,6 +6,7 @@ const environmentSchema = z.object({
     .default('development'),
   PORT: z.coerce.number().int().positive().optional(),
   API_PORT: z.coerce.number().int().positive().default(4000),
+  TRUST_PROXY_HOPS: z.coerce.number().int().min(0).default(0),
   WEB_URL: z.url().default('http://localhost:3000'),
   ADMIN_URL: z.url().default('http://localhost:5173'),
   DATABASE_HOST: z.string().default('localhost'),

@@ -7,4 +7,3 @@ Items still to complete for authentication:
 - Confirm the final email templates and sender address.
 - Add the profile image field when profile management is implemented.
 - Connect the web authentication forms to the production API configuration.
-- Add the mobile authentication screens using the same API flow.

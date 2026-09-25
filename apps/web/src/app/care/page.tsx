@@ -6,7 +6,7 @@ const card =
 export default function CarePage() {
   return (
     <main className="min-h-screen bg-[#fbf7ee] text-[#112f22]">
-      <SiteHeader />
+      <SiteHeader active="care" />
       <section className="mx-auto w-[min(1240px,calc(100%_-_2.5rem))] pt-[.9rem] pb-10 max-md:w-[calc(100%_-_2rem)]">
         <p className="mb-[.3rem] text-[.84rem] text-[#e5763d]">
           Private and secure

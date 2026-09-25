@@ -33,7 +33,8 @@ export const passwordResetRequestSchema = z.object({
 })
 
 export const passwordResetConfirmSchema = z.object({
-  token: z.string().min(32).max(512),
+  email: emailSchema,
+  otp: z.string().regex(/^\d{6}$/),
   newPassword: z.string().min(8),
 })
 

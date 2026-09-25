@@ -7,6 +7,10 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule)
   const config = app.get(ConfigService)
 
+  app.getHttpAdapter().getInstance().set(
+    'trust proxy',
+    config.get<number>('TRUST_PROXY_HOPS') ?? 0,
+  )
   app.setGlobalPrefix('api/v1')
   app.enableCors({
     credentials: true,
